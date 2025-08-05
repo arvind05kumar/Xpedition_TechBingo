@@ -19,7 +19,15 @@ export const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 py-12 px-4">
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundImage: 'url(/assets/background.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+      className="py-12 px-4"
+    >
       <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
