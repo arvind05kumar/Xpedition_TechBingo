@@ -215,7 +215,15 @@ function App() {
 
   if (gameState.gameOver) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 py-12">
+      <div
+        style={{
+          minHeight: '100vh',
+          backgroundImage: 'url(/background.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+        className="py-12"
+      >
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white mb-4">
@@ -236,12 +244,20 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 py-8 px-4">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8">
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundImage: 'url(/background.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+      className="py-8 px-4"
+    >
+      <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <Brain className="w-8 h-8 text-indigo-600" />
-            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+            <Brain className="w-8 h-8" style={{ color: '#052F3A' }} />
+            <h1 className="text-3xl font-bold" style={{ color: '#052F3A' }}>
               TECH-BINGOO
             </h1>
           </div>

@@ -31,8 +31,8 @@ export const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
       <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Brain className="w-12 h-12 text-indigo-600" />
-            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+            <Brain className="w-12 h-12" style={{ color: '#052F3A' }} />
+            <h1 className="text-4xl font-bold" style={{ color: '#052F3A' }}>
               TECH-BINGOO
             </h1>
           </div>
@@ -41,7 +41,7 @@ export const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="playerName" className="block text-sm font-medium text-gray-700 mb-1">
-              Enter Your Name
+              Enter Your Roll Number
             </label>
             <input
               type="text"
@@ -52,15 +52,15 @@ export const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
                 setError('');
               }}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Your name"
+              placeholder="Your Roll number"
             />
             {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
           </div>
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-lg 
-              hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-medium"
+            className="w-full text-black py-3 px-4 rounded-lg transition-all duration-200 font-medium"
+            style={{ backgroundColor: '#3FC1D8' }}
           >
             Start Game
           </button>
