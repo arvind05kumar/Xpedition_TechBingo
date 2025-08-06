@@ -7,6 +7,7 @@ import { Welcome } from './components/Welcome';
 import { sampleQuestions } from './data/questions';
 import { GameState, Question, LeaderboardEntry } from './types';
 import { Brain } from 'lucide-react';
+import { supabase } from './supabaseClient'; // Step 1: import Supabase client
 
 const BOARD_SIZE = 5;
 const GAME_TIME = 600; // 10 minutes in seconds
@@ -44,7 +45,7 @@ function App() {
       .sort(() => Math.random() - 0.5)
       .slice(0, BOARD_SIZE * BOARD_SIZE)
       .map((q, id) => ({ ...q, id }));
-    
+
     setGameState(prev => ({
       ...prev,
       board: shuffled,
@@ -80,7 +81,6 @@ function App() {
     };
     let hasWinningLine = false;
 
-    // Check rows
     for (let i = 0; i < BOARD_SIZE; i++) {
       const row = Array.from({ length: BOARD_SIZE }, (_, j) => {
         const cell = board[i * BOARD_SIZE + j];
@@ -94,7 +94,6 @@ function App() {
       }
     }
 
-    // Check columns
     for (let i = 0; i < BOARD_SIZE; i++) {
       const col = Array.from({ length: BOARD_SIZE }, (_, j) => {
         const cell = board[j * BOARD_SIZE + i];
@@ -108,7 +107,6 @@ function App() {
       }
     }
 
-    // Check diagonals
     const diag1 = Array.from({ length: BOARD_SIZE }, (_, i) => {
       const cell = board[i * BOARD_SIZE + i];
       return cell ? cell.id : null;
@@ -139,12 +137,11 @@ function App() {
     score += completedLines.rows.length * ROW_POINTS;
     score += completedLines.columns.length * COLUMN_POINTS;
     score += completedLines.diagonals.length * DIAGONAL_POINTS;
-    
-    // Add bonus points for early submission
+
     if (timeLeft > 0) {
       score += EARLY_SUBMISSION_POINTS;
     }
-    
+
     return score;
   }, []);
 
@@ -174,6 +171,18 @@ function App() {
     setSelectedCell(null);
   };
 
+  const submitBingoResult = async (rollNumber: string, progress: number, timeTaken: number) => {
+    const { error } = await supabase
+      .from('bingo_players')
+      .insert([{ roll_number: rollNumber, progress, time_taken: timeTaken }]);
+
+    if (error) {
+      console.error('Error saving result:', error);
+    } else {
+      alert('Game result saved successfully!');
+    }
+  };
+
   const handleGameSubmit = () => {
     const { hasWinningLine, newCompletedLines } = checkLine();
     if (!hasWinningLine) {
@@ -194,7 +203,8 @@ function App() {
       submitted: true
     }));
 
-    // Update leaderboard
+    submitBingoResult(playerName, gameState.correctAnswers.size, GAME_TIME - gameState.timeLeft); // Step 3: save result
+
     setLeaderboard(prev => {
       const newEntry = {
         username: playerName,
@@ -210,7 +220,9 @@ function App() {
   };
 
   if (!gameStarted) {
-    return <Welcome onStart={handleStart} />;
+    return (
+      <Welcome onStart={handleStart} />
+    );
   }
 
   if (gameState.gameOver) {
