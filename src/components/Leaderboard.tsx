@@ -54,13 +54,6 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ entries, onPlayAgain }
           </div>
         ))}
       </div>
-
-      <button
-        onClick={onPlayAgain}
-        className="mt-8 w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
-      >
-        Play Again
-      </button>
     </div>
   );
 };
