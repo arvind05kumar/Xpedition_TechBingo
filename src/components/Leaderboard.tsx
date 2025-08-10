@@ -50,7 +50,6 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ entries, onPlayAgain }
                   <span>{formatTime(entry.timeLeft)}</span>
                 </div>
               )}
-              <span className="font-bold text-indigo-600">{entry.highScore} pts</span>
             </div>
           </div>
         ))}

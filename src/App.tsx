@@ -7,7 +7,6 @@ import { Welcome } from './components/Welcome';
 import { sampleQuestions } from './data/questions';
 import { GameState, Question, LeaderboardEntry } from './types';
 import { Brain } from 'lucide-react';
-import { supabase } from './supabaseClient'; // Step 1: import Supabase client
 
 const BOARD_SIZE = 5;
 const GAME_TIME = 600; // 10 minutes in seconds
@@ -15,6 +14,7 @@ const ROW_POINTS = 1;
 const COLUMN_POINTS = 2;
 const DIAGONAL_POINTS = 3;
 const EARLY_SUBMISSION_POINTS = 2;
+const CELL_POINTS = 10;
 
 const initialGameState: GameState = {
   board: Array(BOARD_SIZE * BOARD_SIZE).fill(null),
@@ -132,18 +132,10 @@ function App() {
     return { hasWinningLine, newCompletedLines };
   }, [gameState.board, gameState.correctAnswers, gameState.completedLines]);
 
-  const calculateScore = useCallback((completedLines: GameState['completedLines'], timeLeft: number) => {
-    let score = 0;
-    score += completedLines.rows.length * ROW_POINTS;
-    score += completedLines.columns.length * COLUMN_POINTS;
-    score += completedLines.diagonals.length * DIAGONAL_POINTS;
-
-    if (timeLeft > 0) {
-      score += EARLY_SUBMISSION_POINTS;
-    }
-
-    return score;
-  }, []);
+  const calculateScore = useCallback(() => {
+    // Only cell points, no extra for rows/columns
+    return gameState.correctAnswers.size * CELL_POINTS;
+  }, [gameState.correctAnswers.size]);
 
   const handleCellClick = (index: number) => {
     if (gameState.gameOver || gameState.submitted) return;
@@ -171,39 +163,24 @@ function App() {
     setSelectedCell(null);
   };
 
-  const submitBingoResult = async (rollNumber: string, progress: number, timeTaken: number) => {
-    const { error } = await supabase
-      .from('bingo_players')
-      .insert([{ roll_number: rollNumber, progress, time_taken: timeTaken }]);
-
-    if (error) {
-      console.error('Error saving result:', error);
-    } else {
-      alert('Game result saved successfully!');
-    }
-  };
-
   const handleGameSubmit = () => {
-    const { hasWinningLine, newCompletedLines } = checkLine();
-    if (!hasWinningLine) {
-      alert("You need to complete at least one line (row, column, or diagonal) to submit!");
-      return;
-    }
+  // We still call checkLine so any completed lines are captured,
+  // but we do NOT block submission if there are none.
+  const { newCompletedLines } = checkLine();
 
-    const finalScore = calculateScore(newCompletedLines, gameState.timeLeft);
-    setGameState(prev => ({
-      ...prev,
-      gameOver: true,
-      score: finalScore,
-      completedLines: {
-        rows: [...prev.completedLines.rows, ...newCompletedLines.rows],
-        columns: [...prev.completedLines.columns, ...newCompletedLines.columns],
-        diagonals: [...prev.completedLines.diagonals, ...newCompletedLines.diagonals]
-      },
-      submitted: true
-    }));
+  const finalScore = calculateScore(newCompletedLines, gameState.timeLeft);
+  setGameState(prev => ({
+    ...prev,
+    gameOver: true,
+    score: finalScore,
+    completedLines: {
+      rows: [...prev.completedLines.rows, ...newCompletedLines.rows],
+      columns: [...prev.completedLines.columns, ...newCompletedLines.columns],
+      diagonals: [...prev.completedLines.diagonals, ...newCompletedLines.diagonals]
+    },
+    submitted: true
+  }));
 
-    submitBingoResult(playerName, gameState.correctAnswers.size, GAME_TIME - gameState.timeLeft); // Step 3: save result
 
     setLeaderboard(prev => {
       const newEntry = {
