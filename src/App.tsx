@@ -7,6 +7,7 @@ import { Welcome } from './components/Welcome';
 import { sampleQuestions } from './data/questions';
 import { GameState, Question, LeaderboardEntry } from './types';
 import { Brain } from 'lucide-react';
+import { GoogleSheetsService } from './services/googleSheetsService';
 
 const BOARD_SIZE = 5;
 const GAME_TIME = 600; // 10 minutes in seconds
@@ -39,6 +40,8 @@ function App() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [playerName, setPlayerName] = useState<string>('');
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameStartTime, setGameStartTime] = useState<number>(0);
+  const [isSubmittingToSheets, setIsSubmittingToSheets] = useState(false);
 
   const shuffleQuestions = useCallback(() => {
     const shuffled = [...sampleQuestions]
@@ -69,6 +72,7 @@ function App() {
   const handleStart = (name: string) => {
     setPlayerName(name);
     setGameStarted(true);
+    setGameStartTime(Date.now());
   };
 
   const checkLine = useCallback(() => {
@@ -163,25 +167,27 @@ function App() {
     setSelectedCell(null);
   };
 
-  const handleGameSubmit = () => {
-  // We still call checkLine so any completed lines are captured,
-  // but we do NOT block submission if there are none.
-  const { newCompletedLines } = checkLine();
+  const handleGameSubmit = async () => {
+    // We still call checkLine so any completed lines are captured,
+    // but we do NOT block submission if there are none.
+    const { newCompletedLines } = checkLine();
 
-  const finalScore = calculateScore(newCompletedLines, gameState.timeLeft);
-  setGameState(prev => ({
-    ...prev,
-    gameOver: true,
-    score: finalScore,
-    completedLines: {
-      rows: [...prev.completedLines.rows, ...newCompletedLines.rows],
-      columns: [...prev.completedLines.columns, ...newCompletedLines.columns],
-      diagonals: [...prev.completedLines.diagonals, ...newCompletedLines.diagonals]
-    },
-    submitted: true
-  }));
+    const finalScore = calculateScore();
+    
+    // Update game state first
+    setGameState(prev => ({
+      ...prev,
+      gameOver: true,
+      score: finalScore,
+      completedLines: {
+        rows: [...prev.completedLines.rows, ...newCompletedLines.rows],
+        columns: [...prev.completedLines.columns, ...newCompletedLines.columns],
+        diagonals: [...prev.completedLines.diagonals, ...newCompletedLines.diagonals]
+      },
+      submitted: true
+    }));
 
-
+    // Update leaderboard
     setLeaderboard(prev => {
       const newEntry = {
         username: playerName,
@@ -194,6 +200,27 @@ function App() {
         .map((entry, index) => ({ ...entry, rank: index + 1 }));
       return newLeaderboard;
     });
+
+    // Submit to Google Sheets
+    setIsSubmittingToSheets(true);
+    try {
+      const success = await GoogleSheetsService.saveGameData(
+        playerName,
+        { ...gameState, score: finalScore, completedLines: newCompletedLines },
+        gameStartTime,
+        'manual'
+      );
+      
+      if (success) {
+        console.log('Game data saved to Google Sheets successfully!');
+      } else {
+        console.error('Failed to save game data to Google Sheets');
+      }
+    } catch (error) {
+      console.error('Error saving to Google Sheets:', error);
+    } finally {
+      setIsSubmittingToSheets(false);
+    }
   };
 
   if (!gameStarted) {
@@ -219,6 +246,12 @@ function App() {
               {gameState.timeLeft <= 0 ? "Time's Up!!!" : "Game Finished!"}
             </h1>
             <p className="text-xl text-white mb-4">Final Score: {gameState.score}</p>
+            {isSubmittingToSheets && (
+              <div className="text-white mb-4">
+                <p>Saving your results...</p>
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+              </div>
+            )}
           </div>
           <Leaderboard
             entries={leaderboard}
@@ -255,7 +288,30 @@ function App() {
             <Timer
               timeLeft={gameState.timeLeft}
               setTimeLeft={(time) => setGameState(prev => ({ ...prev, timeLeft: time }))}
-              onTimeUp={() => setGameState(prev => ({ ...prev, gameOver: true }))}
+              onTimeUp={async () => {
+                setGameState(prev => ({ ...prev, gameOver: true }));
+                
+                // Submit to Google Sheets on timeout
+                setIsSubmittingToSheets(true);
+                try {
+                  const success = await GoogleSheetsService.saveGameData(
+                    playerName,
+                    gameState,
+                    gameStartTime,
+                    'timeout'
+                  );
+                  
+                  if (success) {
+                    console.log('Game data saved to Google Sheets successfully!');
+                  } else {
+                    console.error('Failed to save game data to Google Sheets');
+                  }
+                } catch (error) {
+                  console.error('Error saving to Google Sheets:', error);
+                } finally {
+                  setIsSubmittingToSheets(false);
+                }
+              }}
             />
           </div>
         </div>
@@ -292,7 +348,7 @@ function App() {
               id="answer"
               value={currentAnswer}
               onChange={(e) => setCurrentAnswer(e.target.value)}
-              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-lg py-4 px-4 h-16"
               placeholder="Type your answer here..."
               disabled={selectedCell === null || gameState.gameOver || gameState.submitted}
             />
