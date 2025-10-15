@@ -11,10 +11,11 @@ import { GoogleSheetsService } from './services/googleSheetsService';
 
 const BOARD_SIZE = 5;
 const GAME_TIME = 600; // 10 minutes in seconds
-const ROW_POINTS = 1;
-const COLUMN_POINTS = 2;
-const DIAGONAL_POINTS = 3;
-const EARLY_SUBMISSION_POINTS = 2;
+// Reserved for future scoring extensions
+// const ROW_POINTS = 1;
+// const COLUMN_POINTS = 2;
+// const DIAGONAL_POINTS = 3;
+// const EARLY_SUBMISSION_POINTS = 2;
 const CELL_POINTS = 10;
 
 // Normalize answers for comparison: remove punctuation/whitespace, case-insensitive, strip accents
@@ -55,6 +56,11 @@ function App() {
   const [gameStartTime, setGameStartTime] = useState<number>(0);
   const [isSubmittingToSheets, setIsSubmittingToSheets] = useState(false);
 
+  // Local storage keys
+  const SUBMITTED_KEY = 'startup_bingo_submitted';
+  const FINAL_SCORE_KEY = 'startup_bingo_final_score';
+  const PLAYER_NAME_KEY = 'startup_bingo_player_name';
+
   const shuffleQuestions = useCallback(() => {
     const shuffled = [...sampleQuestions]
       .sort(() => Math.random() - 0.5)
@@ -81,7 +87,28 @@ function App() {
     }
   }, [gameStarted, shuffleQuestions]);
 
+  // On mount, if a previous submission exists, keep user on Game Over screen
+  useEffect(() => {
+    const wasSubmitted = localStorage.getItem(SUBMITTED_KEY) === '1';
+    if (wasSubmitted) {
+      const storedScore = Number(localStorage.getItem(FINAL_SCORE_KEY) || 0);
+      const storedName = localStorage.getItem(PLAYER_NAME_KEY) || '';
+      setPlayerName(storedName);
+      setGameStarted(true);
+      setGameState(prev => ({
+        ...prev,
+        gameOver: true,
+        submitted: true,
+        score: storedScore
+      }));
+    }
+  }, []);
+
   const handleStart = (name: string) => {
+    // Clear any previous submission state
+    localStorage.removeItem(SUBMITTED_KEY);
+    localStorage.removeItem(FINAL_SCORE_KEY);
+    localStorage.removeItem(PLAYER_NAME_KEY);
     setPlayerName(name);
     setGameStarted(true);
     setGameStartTime(Date.now());
@@ -199,6 +226,13 @@ function App() {
       submitted: true
     }));
 
+    // Persist submission to prevent returning to game on reload
+    try {
+      localStorage.setItem(SUBMITTED_KEY, '1');
+      localStorage.setItem(FINAL_SCORE_KEY, String(finalScore));
+      localStorage.setItem(PLAYER_NAME_KEY, playerName);
+    } catch {}
+
     // Update leaderboard
     setLeaderboard(prev => {
       const newEntry = {
@@ -246,7 +280,7 @@ function App() {
       <div
         style={{
           minHeight: '100vh',
-          backgroundImage: 'url(/background.jpg)',
+          backgroundImage: 'url(/TheFounderFormulaEntryPass.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -281,7 +315,8 @@ function App() {
     <div
       style={{
         minHeight: '100vh',
-        backgroundImage: 'url(/background.jpg)',
+        backgroundImage: 'url(/TheFounderFormulaEntryPass.png)',
+        
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
@@ -301,14 +336,20 @@ function App() {
               timeLeft={gameState.timeLeft}
               setTimeLeft={(time) => setGameState(prev => ({ ...prev, timeLeft: time }))}
               onTimeUp={async () => {
-                setGameState(prev => ({ ...prev, gameOver: true }));
+              const finalScore = calculateScore();
+              setGameState(prev => ({ ...prev, gameOver: true, submitted: true, score: finalScore }));
+              try {
+                localStorage.setItem(SUBMITTED_KEY, '1');
+                localStorage.setItem(FINAL_SCORE_KEY, String(finalScore));
+                localStorage.setItem(PLAYER_NAME_KEY, playerName);
+              } catch {}
                 
                 // Submit to Google Sheets on timeout
                 setIsSubmittingToSheets(true);
                 try {
                   const success = await GoogleSheetsService.saveGameData(
                     playerName,
-                    gameState,
+                  { ...gameState, score: finalScore },
                     gameStartTime,
                     'timeout'
                   );

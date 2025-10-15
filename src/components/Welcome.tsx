@@ -22,7 +22,7 @@ export const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
     <div
       style={{
         minHeight: '100vh',
-        backgroundImage: 'url(/background.jpg)', // This will work if the image is in public/assets
+        backgroundImage: 'url(/TheFounderFormulaEntryPass.png)', // This will work if the image is in public/assets
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
