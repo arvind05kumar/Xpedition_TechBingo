@@ -1,9 +1,9 @@
-// Configuration file for Tech Bingo Game
+// Configuration file for Startup Bingo Game
 // Update these values according to your setup
 
 export const CONFIG = {
   // Replace this with your deployed Google Apps Script web app URL
-  GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxZFvaR0NqTNe-js7jPSyHhk4pOIFHT0g_gygZmyxe5zgIqFI-nv20ba81L4CBOTzRsVw/exec', // Replace with your actual web app URL
+  GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycby3GgHE9A2PfqdB4HW8BZNdroTFm9t78cDgGsesFR-7MCjeCwVoJHHv8UQ3_PRFSlcyQw/exec', // Replace with your actual web app URL
   
   // Game settings
   BOARD_SIZE: 5,

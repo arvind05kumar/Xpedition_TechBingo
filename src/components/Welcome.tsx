@@ -33,7 +33,7 @@ export const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
           <div className="flex items-center justify-center gap-3 mb-4">
             <Brain className="w-12 h-12" style={{ color: '#052F3A' }} />
             <h1 className="text-4xl font-bold" style={{ color: '#052F3A' }}>
-              TECH-BINGOO
+              STARTUP BINGO
             </h1>
           </div>
         </div>

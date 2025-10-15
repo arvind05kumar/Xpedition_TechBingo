@@ -6,7 +6,7 @@ import { ProgressBar } from './components/ProgressBar';
 import { Welcome } from './components/Welcome';
 import { sampleQuestions } from './data/questions';
 import { GameState, Question, LeaderboardEntry } from './types';
-import { Brain } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 import { GoogleSheetsService } from './services/googleSheetsService';
 
 const BOARD_SIZE = 5;
@@ -16,6 +16,18 @@ const COLUMN_POINTS = 2;
 const DIAGONAL_POINTS = 3;
 const EARLY_SUBMISSION_POINTS = 2;
 const CELL_POINTS = 10;
+
+// Normalize answers for comparison: remove punctuation/whitespace, case-insensitive, strip accents
+function normalizeAnswer(input: string): string {
+  if (!input) return '';
+  return input
+    .normalize('NFKD')
+    // remove diacritic marks
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    // keep only a-z and 0-9
+    .replace(/[^a-z0-9]/g, '');
+}
 
 const initialGameState: GameState = {
   board: Array(BOARD_SIZE * BOARD_SIZE).fill(null),
@@ -154,7 +166,7 @@ function App() {
     const question = gameState.board[selectedCell] as Question;
     if (!question) return;
 
-    const isCorrect = currentAnswer.toLowerCase() === question.answer.toLowerCase();
+    const isCorrect = normalizeAnswer(currentAnswer) === normalizeAnswer(question.answer);
 
     setGameState(prev => ({
       ...prev,
@@ -278,9 +290,9 @@ function App() {
       <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <Brain className="w-8 h-8" style={{ color: '#052F3A' }} />
-            <h1 className="text-3xl font-bold" style={{ color: '#052F3A' }}>
-              TECH-BINGOO
+            <Briefcase className="w-8 h-8" style={{ color: '#0B3C5D' }} />
+            <h1 className="text-3xl font-bold" style={{ color: '#0B3C5D' }}>
+              STARTUP BINGO
             </h1>
           </div>
           <div className="flex items-center gap-4">
