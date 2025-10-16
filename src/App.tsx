@@ -281,7 +281,7 @@ function App() {
           <div className="flex items-center gap-3">
             <Brain className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: '#052F3A' }} />
             <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#052F3A' }}>
-              TECH-BINGOO
+              STARTUP BINGO
             </h1>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
