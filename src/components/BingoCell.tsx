@@ -24,17 +24,17 @@ export const BingoCell: React.FC<BingoCellProps> = ({
   return (
     <button
       onClick={onClick}
-      className={`${getBgColor()} p-4 border rounded-lg shadow-sm 
-        hover:shadow-md transition-all duration-200 min-h-[120px] text-sm relative
+      className={`${getBgColor()} p-3 sm:p-4 border rounded-lg shadow-sm 
+        hover:shadow-md transition-all duration-200 min-h-[90px] sm:min-h-[110px] md:min-h-[120px] text-xs sm:text-sm relative
         transform hover:-translate-y-1 ${isSelected ? 'ring-4 ring-indigo-300 ring-opacity-50' : ''}`}
     >
-      <p className={isSelected ? 'text-white' : 'text-gray-800'}>{question}</p>
+      <p className={`${isSelected ? 'text-white' : 'text-gray-800'} leading-snug sm:leading-normal`}>{question}</p>
       {isCorrect !== null && (
         <div className="absolute top-2 right-2">
           {isCorrect ? (
-            <Check className="w-5 h-5 text-green-600" />
+            <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
           ) : (
-            <X className="w-5 h-5 text-red-600" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
           )}
         </div>
       )}

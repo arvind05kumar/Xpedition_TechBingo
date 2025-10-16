@@ -6,7 +6,7 @@ import { ProgressBar } from './components/ProgressBar';
 import { Welcome } from './components/Welcome';
 import { sampleQuestions } from './data/questions';
 import { GameState, Question, LeaderboardEntry } from './types';
-import { Briefcase } from 'lucide-react';
+import { Brain } from 'lucide-react';
 import { GoogleSheetsService } from './services/googleSheetsService';
 
 const BOARD_SIZE = 5;
@@ -17,18 +17,6 @@ const GAME_TIME = 900; // 15 minutes in seconds
 // const DIAGONAL_POINTS = 3;
 // const EARLY_SUBMISSION_POINTS = 2;
 const CELL_POINTS = 10;
-
-// Normalize answers for comparison: remove punctuation/whitespace, case-insensitive, strip accents
-function normalizeAnswer(input: string): string {
-  if (!input) return '';
-  return input
-    .normalize('NFKD')
-    // remove diacritic marks
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    // keep only a-z and 0-9
-    .replace(/[^a-z0-9]/g, '');
-}
 
 const initialGameState: GameState = {
   board: Array(BOARD_SIZE * BOARD_SIZE).fill(null),
@@ -56,11 +44,6 @@ function App() {
   const [gameStartTime, setGameStartTime] = useState<number>(0);
   const [isSubmittingToSheets, setIsSubmittingToSheets] = useState(false);
 
-  // Local storage keys
-  const SUBMITTED_KEY = 'startup_bingo_submitted';
-  const FINAL_SCORE_KEY = 'startup_bingo_final_score';
-  const PLAYER_NAME_KEY = 'startup_bingo_player_name';
-
   const shuffleQuestions = useCallback(() => {
     const shuffled = [...sampleQuestions]
       .sort(() => Math.random() - 0.5)
@@ -87,28 +70,7 @@ function App() {
     }
   }, [gameStarted, shuffleQuestions]);
 
-  // On mount, if a previous submission exists, keep user on Game Over screen
-  useEffect(() => {
-    const wasSubmitted = localStorage.getItem(SUBMITTED_KEY) === '1';
-    if (wasSubmitted) {
-      const storedScore = Number(localStorage.getItem(FINAL_SCORE_KEY) || 0);
-      const storedName = localStorage.getItem(PLAYER_NAME_KEY) || '';
-      setPlayerName(storedName);
-      setGameStarted(true);
-      setGameState(prev => ({
-        ...prev,
-        gameOver: true,
-        submitted: true,
-        score: storedScore
-      }));
-    }
-  }, []);
-
   const handleStart = (name: string) => {
-    // Clear any previous submission state
-    localStorage.removeItem(SUBMITTED_KEY);
-    localStorage.removeItem(FINAL_SCORE_KEY);
-    localStorage.removeItem(PLAYER_NAME_KEY);
     setPlayerName(name);
     setGameStarted(true);
     setGameStartTime(Date.now());
@@ -180,37 +142,6 @@ function App() {
     return gameState.correctAnswers.size * CELL_POINTS;
   }, [gameState.correctAnswers.size]);
 
-  const handleTimeUp = useCallback(async () => {
-    const finalScore = calculateScore();
-    setGameState(prev => ({ ...prev, gameOver: true, submitted: true, score: finalScore }));
-    try {
-      localStorage.setItem(SUBMITTED_KEY, '1');
-      localStorage.setItem(FINAL_SCORE_KEY, String(finalScore));
-      localStorage.setItem(PLAYER_NAME_KEY, playerName);
-    } catch {}
-    
-    // Submit to Google Sheets on timeout
-    setIsSubmittingToSheets(true);
-    try {
-      const success = await GoogleSheetsService.saveGameData(
-        playerName,
-        { ...gameState, score: finalScore },
-        gameStartTime,
-        'timeout'
-      );
-      
-      if (success) {
-        console.log('Game data saved to Google Sheets successfully!');
-      } else {
-        console.error('Failed to save game data to Google Sheets');
-      }
-    } catch (error) {
-      console.error('Error saving to Google Sheets:', error);
-    } finally {
-      setIsSubmittingToSheets(false);
-    }
-  }, [calculateScore, playerName, gameState, gameStartTime]);
-
   const handleCellClick = (index: number) => {
     if (gameState.gameOver || gameState.submitted) return;
     setSelectedCell(index);
@@ -224,7 +155,7 @@ function App() {
     const question = gameState.board[selectedCell] as Question;
     if (!question) return;
 
-    const isCorrect = normalizeAnswer(currentAnswer) === normalizeAnswer(question.answer);
+    const isCorrect = currentAnswer.toLowerCase() === question.answer.toLowerCase();
 
     setGameState(prev => ({
       ...prev,
@@ -256,13 +187,6 @@ function App() {
       },
       submitted: true
     }));
-
-    // Persist submission to prevent returning to game on reload
-    try {
-      localStorage.setItem(SUBMITTED_KEY, '1');
-      localStorage.setItem(FINAL_SCORE_KEY, String(finalScore));
-      localStorage.setItem(PLAYER_NAME_KEY, playerName);
-    } catch {}
 
     // Update leaderboard
     setLeaderboard(prev => {
@@ -311,7 +235,7 @@ function App() {
       <div
         style={{
           minHeight: '100vh',
-          backgroundImage: 'url(/TheFounderFormulaEntryPass.png)',
+          backgroundImage: 'url(/background.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -346,34 +270,56 @@ function App() {
     <div
       style={{
         minHeight: '100vh',
-        backgroundImage: 'url(/TheFounderFormulaEntryPass.png)',
-        
+        backgroundImage: 'url(/background.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
-      className="py-8 px-4"
+      className="py-6 px-3 sm:py-8 sm:px-4"
     >
-      <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8">
+      <div className="max-w-4xl w-full mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-6 md:p-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <Briefcase className="w-8 h-8" style={{ color: '#0B3C5D' }} />
-            <h1 className="text-3xl font-bold" style={{ color: '#0B3C5D' }}>
-              STARTUP BINGO
+            <Brain className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: '#052F3A' }} />
+            <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#052F3A' }}>
+              TECH-BINGOO
             </h1>
           </div>
-          <div className="flex items-center gap-4">
-            <p className="text-lg font-medium text-gray-700">Player: {playerName}</p>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <p className="text-base sm:text-lg font-medium text-gray-700">Player: {playerName}</p>
             <Timer
               timeLeft={gameState.timeLeft}
               setTimeLeft={(time) => setGameState(prev => ({ ...prev, timeLeft: time }))}
-              onTimeUp={handleTimeUp}
+              onTimeUp={async () => {
+                setGameState(prev => ({ ...prev, gameOver: true }));
+                
+                // Submit to Google Sheets on timeout
+                setIsSubmittingToSheets(true);
+                try {
+                  const success = await GoogleSheetsService.saveGameData(
+                    playerName,
+                    gameState,
+                    gameStartTime,
+                    'timeout'
+                  );
+                  
+                  if (success) {
+                    console.log('Game data saved to Google Sheets successfully!');
+                  } else {
+                    console.error('Failed to save game data to Google Sheets');
+                  }
+                } catch (error) {
+                  console.error('Error saving to Google Sheets:', error);
+                } finally {
+                  setIsSubmittingToSheets(false);
+                }
+              }}
             />
           </div>
         </div>
 
         <ProgressBar gameState={gameState} />
 
-        <div className="grid grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 mb-6 sm:mb-8">
           {gameState.board.map((cell, index) => (
             <BingoCell
               key={index}
@@ -393,7 +339,7 @@ function App() {
           ))}
         </div>
 
-        <form onSubmit={handleAnswerSubmit} className="space-y-4">
+        <form onSubmit={handleAnswerSubmit} className="space-y-3 sm:space-y-4">
           <div>
             <label htmlFor="answer" className="block text-sm font-medium text-gray-700">
               Your Answer
@@ -403,18 +349,18 @@ function App() {
               id="answer"
               value={currentAnswer}
               onChange={(e) => setCurrentAnswer(e.target.value)}
-              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-lg py-4 px-4 h-16"
+              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base sm:text-lg py-3 sm:py-4 px-3 sm:px-4 h-12 sm:h-14 md:h-16"
               placeholder="Type your answer here..."
               disabled={selectedCell === null || gameState.gameOver || gameState.submitted}
             />
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-3 sm:gap-4">
             <button
               type="submit"
               disabled={selectedCell === null || gameState.gameOver || gameState.submitted}
-              className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-lg 
+              className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 sm:py-3 px-3 sm:px-4 rounded-lg 
                 hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 
-                disabled:cursor-not-allowed transition-all duration-200 font-medium"
+                disabled:cursor-not-allowed transition-all duration-200 font-medium text-sm sm:text-base"
             >
               Submit Answer
             </button>
@@ -422,9 +368,9 @@ function App() {
               type="button"
               onClick={handleGameSubmit}
               disabled={gameState.gameOver || gameState.submitted}
-              className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-lg 
+              className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 sm:py-3 px-3 sm:px-4 rounded-lg 
                 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-400 
-                disabled:cursor-not-allowed transition-all duration-200 font-medium"
+                disabled:cursor-not-allowed transition-all duration-200 font-medium text-sm sm:text-base"
             >
               Submit Game
             </button>
