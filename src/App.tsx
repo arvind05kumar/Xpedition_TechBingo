@@ -155,7 +155,25 @@ function App() {
     const question = gameState.board[selectedCell] as Question;
     if (!question) return;
 
-    const isCorrect = currentAnswer.toLowerCase() === question.answer.toLowerCase();
+    const normalize = (text: string) =>
+      text
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '') // strip diacritics
+        .replace(/['’`]/g, '') // unify quotes
+        .toLowerCase()
+        .replace(/&/g, ' and ')
+        .replace(/[^a-z0-9]+/g, ' ') // non-alphanumerics to space
+        .trim()
+        .replace(/\s+/g, ' '); // collapse spaces
+
+    const normalizedUser = normalize(currentAnswer);
+    const normalizedCorrect = normalize(question.answer);
+
+    const isCorrect =
+      normalizedUser.length > 0 &&
+      (normalizedUser === normalizedCorrect ||
+        normalizedCorrect.includes(normalizedUser) ||
+        normalizedUser.includes(normalizedCorrect));
 
     setGameState(prev => ({
       ...prev,
@@ -281,7 +299,7 @@ function App() {
           <div className="flex items-center gap-3">
             <Brain className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: '#052F3A' }} />
             <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#052F3A' }}>
-              TECH-BINGOO
+              STARTUP BINGO
             </h1>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
