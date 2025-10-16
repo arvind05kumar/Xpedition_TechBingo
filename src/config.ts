@@ -7,7 +7,7 @@ export const CONFIG = {
   
   // Game settings
   BOARD_SIZE: 5,
-  GAME_TIME: 600, // 10 minutes in seconds
+  GAME_TIME: 900, // 15 minutes in seconds
   CELL_POINTS: 10,
   
   // Feature flags

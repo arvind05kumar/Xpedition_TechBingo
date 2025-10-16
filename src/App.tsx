@@ -10,7 +10,7 @@ import { Briefcase } from 'lucide-react';
 import { GoogleSheetsService } from './services/googleSheetsService';
 
 const BOARD_SIZE = 5;
-const GAME_TIME = 600; // 10 minutes in seconds
+const GAME_TIME = 900; // 15 minutes in seconds
 // Reserved for future scoring extensions
 // const ROW_POINTS = 1;
 // const COLUMN_POINTS = 2;
