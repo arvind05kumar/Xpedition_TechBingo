@@ -155,7 +155,25 @@ function App() {
     const question = gameState.board[selectedCell] as Question;
     if (!question) return;
 
-    const isCorrect = currentAnswer.toLowerCase() === question.answer.toLowerCase();
+    const normalize = (text: string) =>
+      text
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '') // strip diacritics
+        .replace(/['’`]/g, '') // unify quotes
+        .toLowerCase()
+        .replace(/&/g, ' and ')
+        .replace(/[^a-z0-9]+/g, ' ') // non-alphanumerics to space
+        .trim()
+        .replace(/\s+/g, ' '); // collapse spaces
+
+    const normalizedUser = normalize(currentAnswer);
+    const normalizedCorrect = normalize(question.answer);
+
+    const isCorrect =
+      normalizedUser.length > 0 &&
+      (normalizedUser === normalizedCorrect ||
+        normalizedCorrect.includes(normalizedUser) ||
+        normalizedUser.includes(normalizedCorrect));
 
     setGameState(prev => ({
       ...prev,
