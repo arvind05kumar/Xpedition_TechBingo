@@ -12,7 +12,7 @@ export const sampleQuestions = [
   { question: "Under which organization is E-CELL associated with?", answer: "E-Cell IIT Bombay" },
   { question: "What is NEC full form?", answer: "National Entrepreneurship Challenge" },
   { question: "In what collaboration is with E-Cell is?", answer: "IM Punjab" },
-  { question: "Names of both founders’ startups?", answer: "Innovation point, Beesolver technology" },
+  { question: "Names of both founders’ startups?", answer: "Innovator point, Beesolver technology" },
   { question: "First audience question mainly about?", answer: "How to get your first client?" },
   { question: "Tagline of E-Cell?", answer: "Where ideas take life" },
   { question: "What is E-Cell basically for?", answer: "Promoting entrepreneurship and innovation" },
