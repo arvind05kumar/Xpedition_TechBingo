@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "setup": "node setup.js"
+    "setup": "node setup.js",
+    "test:answers": "node scripts/test-answers.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.53.0",
