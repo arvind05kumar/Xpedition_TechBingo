@@ -26,19 +26,19 @@ export const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
-      className="py-12 px-4"
+      className="py-10 px-3 sm:py-12 sm:px-4"
     >
-      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
+      <div className="max-w-md w-full mx-auto bg-white rounded-2xl shadow-xl p-6 sm:p-8">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Brain className="w-12 h-12" style={{ color: '#052F3A' }} />
-            <h1 className="text-4xl font-bold" style={{ color: '#052F3A' }}>
+            <Brain className="w-10 h-10 sm:w-12 sm:h-12" style={{ color: '#052F3A' }} />
+            <h1 className="text-3xl sm:text-4xl font-bold" style={{ color: '#052F3A' }}>
               STARTUP BINGO
             </h1>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
           <div>
             <label htmlFor="playerName" className="block text-sm font-medium text-gray-700 mb-1">
               Enter Your Roll Number
@@ -51,7 +51,7 @@ export const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
                 setPlayerName(e.target.value);
                 setError('');
               }}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 sm:px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="Your Roll number"
             />
             {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
@@ -59,7 +59,7 @@ export const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
 
           <button
             type="submit"
-            className="w-full text-black py-3 px-4 rounded-lg transition-all duration-200 font-medium"
+            className="w-full text-black py-3 px-3 sm:px-4 rounded-lg transition-all duration-200 font-medium"
             style={{ backgroundColor: '#3FC1D8' }}
           >
             Start Game
@@ -67,8 +67,8 @@ export const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
         </form>
 
         <div className="mt-8 text-center">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">How to Play</h2>
-          <ul className="text-left text-gray-600 space-y-2">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">How to Play</h2>
+          <ul className="text-left text-gray-600 space-y-2 text-sm sm:text-base">
             <li>1. Answer technical questions correctly to mark cells</li>
             <li>2. Complete a row, column, or diagonal to win</li>
             <li>3. Race against time to achieve the highest score</li>
