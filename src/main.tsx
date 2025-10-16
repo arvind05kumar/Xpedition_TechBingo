@@ -5,6 +5,9 @@ import './index.css';
 import { isAnswerMatch, normalizeAnswer } from './utils/answerMatch';
 import { sampleQuestions } from './data/questions';
 
+// TEMP: Force-crash the app to stop deployment/runtime immediately
+throw new Error('Maintenance lock: application startup intentionally halted');
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
