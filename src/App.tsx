@@ -180,6 +180,37 @@ function App() {
     return gameState.correctAnswers.size * CELL_POINTS;
   }, [gameState.correctAnswers.size]);
 
+  const handleTimeUp = useCallback(async () => {
+    const finalScore = calculateScore();
+    setGameState(prev => ({ ...prev, gameOver: true, submitted: true, score: finalScore }));
+    try {
+      localStorage.setItem(SUBMITTED_KEY, '1');
+      localStorage.setItem(FINAL_SCORE_KEY, String(finalScore));
+      localStorage.setItem(PLAYER_NAME_KEY, playerName);
+    } catch {}
+    
+    // Submit to Google Sheets on timeout
+    setIsSubmittingToSheets(true);
+    try {
+      const success = await GoogleSheetsService.saveGameData(
+        playerName,
+        { ...gameState, score: finalScore },
+        gameStartTime,
+        'timeout'
+      );
+      
+      if (success) {
+        console.log('Game data saved to Google Sheets successfully!');
+      } else {
+        console.error('Failed to save game data to Google Sheets');
+      }
+    } catch (error) {
+      console.error('Error saving to Google Sheets:', error);
+    } finally {
+      setIsSubmittingToSheets(false);
+    }
+  }, [calculateScore, playerName, gameState, gameStartTime]);
+
   const handleCellClick = (index: number) => {
     if (gameState.gameOver || gameState.submitted) return;
     setSelectedCell(index);
@@ -335,36 +366,7 @@ function App() {
             <Timer
               timeLeft={gameState.timeLeft}
               setTimeLeft={(time) => setGameState(prev => ({ ...prev, timeLeft: time }))}
-              onTimeUp={async () => {
-              const finalScore = calculateScore();
-              setGameState(prev => ({ ...prev, gameOver: true, submitted: true, score: finalScore }));
-              try {
-                localStorage.setItem(SUBMITTED_KEY, '1');
-                localStorage.setItem(FINAL_SCORE_KEY, String(finalScore));
-                localStorage.setItem(PLAYER_NAME_KEY, playerName);
-              } catch {}
-                
-                // Submit to Google Sheets on timeout
-                setIsSubmittingToSheets(true);
-                try {
-                  const success = await GoogleSheetsService.saveGameData(
-                    playerName,
-                  { ...gameState, score: finalScore },
-                    gameStartTime,
-                    'timeout'
-                  );
-                  
-                  if (success) {
-                    console.log('Game data saved to Google Sheets successfully!');
-                  } else {
-                    console.error('Failed to save game data to Google Sheets');
-                  }
-                } catch (error) {
-                  console.error('Error saving to Google Sheets:', error);
-                } finally {
-                  setIsSubmittingToSheets(false);
-                }
-              }}
+              onTimeUp={handleTimeUp}
             />
           </div>
         </div>
