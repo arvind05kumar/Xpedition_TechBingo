@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Setup script for Tech Bingo Google Sheets Integration
+ * Setup script for Startup Bingo Google Sheets Integration
  * This script helps you configure the Google Apps Script URL
  */
 
 const fs = require('fs');
 const path = require('path');
 
-console.log('🎯 Tech Bingo Google Sheets Setup\n');
+console.log('🎯 Startup Bingo Google Sheets Setup\n');
 
 // Check if config file exists
 const configPath = path.join(__dirname, 'src', 'config.ts');

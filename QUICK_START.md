@@ -1,4 +1,4 @@
-# Quick Start Guide - Tech Bingo with Google Sheets
+# Quick Start Guide - Startup Bingo with Google Sheets
 
 ## 🚀 Get Started in 5 Minutes
 

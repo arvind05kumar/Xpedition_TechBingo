@@ -6,16 +6,29 @@ import { ProgressBar } from './components/ProgressBar';
 import { Welcome } from './components/Welcome';
 import { sampleQuestions } from './data/questions';
 import { GameState, Question, LeaderboardEntry } from './types';
-import { Brain } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 import { GoogleSheetsService } from './services/googleSheetsService';
 
 const BOARD_SIZE = 5;
-const GAME_TIME = 600; // 10 minutes in seconds
-const ROW_POINTS = 1;
-const COLUMN_POINTS = 2;
-const DIAGONAL_POINTS = 3;
-const EARLY_SUBMISSION_POINTS = 2;
+const GAME_TIME = 900; // 15 minutes in seconds
+// Reserved for future scoring extensions
+// const ROW_POINTS = 1;
+// const COLUMN_POINTS = 2;
+// const DIAGONAL_POINTS = 3;
+// const EARLY_SUBMISSION_POINTS = 2;
 const CELL_POINTS = 10;
+
+// Normalize answers for comparison: remove punctuation/whitespace, case-insensitive, strip accents
+function normalizeAnswer(input: string): string {
+  if (!input) return '';
+  return input
+    .normalize('NFKD')
+    // remove diacritic marks
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    // keep only a-z and 0-9
+    .replace(/[^a-z0-9]/g, '');
+}
 
 const initialGameState: GameState = {
   board: Array(BOARD_SIZE * BOARD_SIZE).fill(null),
@@ -43,6 +56,11 @@ function App() {
   const [gameStartTime, setGameStartTime] = useState<number>(0);
   const [isSubmittingToSheets, setIsSubmittingToSheets] = useState(false);
 
+  // Local storage keys
+  const SUBMITTED_KEY = 'startup_bingo_submitted';
+  const FINAL_SCORE_KEY = 'startup_bingo_final_score';
+  const PLAYER_NAME_KEY = 'startup_bingo_player_name';
+
   const shuffleQuestions = useCallback(() => {
     const shuffled = [...sampleQuestions]
       .sort(() => Math.random() - 0.5)
@@ -69,7 +87,28 @@ function App() {
     }
   }, [gameStarted, shuffleQuestions]);
 
+  // On mount, if a previous submission exists, keep user on Game Over screen
+  useEffect(() => {
+    const wasSubmitted = localStorage.getItem(SUBMITTED_KEY) === '1';
+    if (wasSubmitted) {
+      const storedScore = Number(localStorage.getItem(FINAL_SCORE_KEY) || 0);
+      const storedName = localStorage.getItem(PLAYER_NAME_KEY) || '';
+      setPlayerName(storedName);
+      setGameStarted(true);
+      setGameState(prev => ({
+        ...prev,
+        gameOver: true,
+        submitted: true,
+        score: storedScore
+      }));
+    }
+  }, []);
+
   const handleStart = (name: string) => {
+    // Clear any previous submission state
+    localStorage.removeItem(SUBMITTED_KEY);
+    localStorage.removeItem(FINAL_SCORE_KEY);
+    localStorage.removeItem(PLAYER_NAME_KEY);
     setPlayerName(name);
     setGameStarted(true);
     setGameStartTime(Date.now());
@@ -154,7 +193,7 @@ function App() {
     const question = gameState.board[selectedCell] as Question;
     if (!question) return;
 
-    const isCorrect = currentAnswer.toLowerCase() === question.answer.toLowerCase();
+    const isCorrect = normalizeAnswer(currentAnswer) === normalizeAnswer(question.answer);
 
     setGameState(prev => ({
       ...prev,
@@ -186,6 +225,13 @@ function App() {
       },
       submitted: true
     }));
+
+    // Persist submission to prevent returning to game on reload
+    try {
+      localStorage.setItem(SUBMITTED_KEY, '1');
+      localStorage.setItem(FINAL_SCORE_KEY, String(finalScore));
+      localStorage.setItem(PLAYER_NAME_KEY, playerName);
+    } catch {}
 
     // Update leaderboard
     setLeaderboard(prev => {
@@ -234,7 +280,7 @@ function App() {
       <div
         style={{
           minHeight: '100vh',
-          backgroundImage: 'url(/background.jpg)',
+          backgroundImage: 'url(/TheFounderFormulaEntryPass.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -269,7 +315,8 @@ function App() {
     <div
       style={{
         minHeight: '100vh',
-        backgroundImage: 'url(/background.jpg)',
+        backgroundImage: 'url(/TheFounderFormulaEntryPass.png)',
+        
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
@@ -278,9 +325,9 @@ function App() {
       <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <Brain className="w-8 h-8" style={{ color: '#052F3A' }} />
-            <h1 className="text-3xl font-bold" style={{ color: '#052F3A' }}>
-              TECH-BINGOO
+            <Briefcase className="w-8 h-8" style={{ color: '#0B3C5D' }} />
+            <h1 className="text-3xl font-bold" style={{ color: '#0B3C5D' }}>
+              STARTUP BINGO
             </h1>
           </div>
           <div className="flex items-center gap-4">
@@ -289,14 +336,20 @@ function App() {
               timeLeft={gameState.timeLeft}
               setTimeLeft={(time) => setGameState(prev => ({ ...prev, timeLeft: time }))}
               onTimeUp={async () => {
-                setGameState(prev => ({ ...prev, gameOver: true }));
+              const finalScore = calculateScore();
+              setGameState(prev => ({ ...prev, gameOver: true, submitted: true, score: finalScore }));
+              try {
+                localStorage.setItem(SUBMITTED_KEY, '1');
+                localStorage.setItem(FINAL_SCORE_KEY, String(finalScore));
+                localStorage.setItem(PLAYER_NAME_KEY, playerName);
+              } catch {}
                 
                 // Submit to Google Sheets on timeout
                 setIsSubmittingToSheets(true);
                 try {
                   const success = await GoogleSheetsService.saveGameData(
                     playerName,
-                    gameState,
+                  { ...gameState, score: finalScore },
                     gameStartTime,
                     'timeout'
                   );

@@ -1,6 +1,6 @@
-# Tech Bingo Game with Google Sheets Integration
+# Startup Bingo Game with Google Sheets Integration
 
-A React-based tech bingo game that automatically saves all player data to Google Sheets for easy evaluation and analysis.
+A React-based startup/entrepreneurship bingo game that automatically saves all player data to Google Sheets for easy evaluation and analysis.
 
 ## Features
 
@@ -30,7 +30,7 @@ A React-based tech bingo game that automatically saves all player data to Google
 2. Create a new project
 3. Replace the default code with the contents of `google-apps-script.js`
 4. Replace `YOUR_SPREADSHEET_ID_HERE` with your actual spreadsheet ID
-5. Save the project with a name like "Tech Bingo Data Collector"
+5. Save the project with a name like "Startup Bingo Data Collector"
 
 ### 3. Deploy as Web App
 

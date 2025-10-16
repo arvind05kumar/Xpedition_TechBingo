@@ -1,4 +1,4 @@
-// Google Sheets Service for Tech Bingo Game
+// Google Sheets Service for Startup Bingo Game
 // This service handles sending game data to Google Sheets via Google Apps Script
 
 export interface GameSubmissionData {

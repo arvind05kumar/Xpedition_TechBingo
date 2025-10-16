@@ -22,7 +22,7 @@ export const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
     <div
       style={{
         minHeight: '100vh',
-        backgroundImage: 'url(/background.jpg)', // This will work if the image is in public/assets
+        backgroundImage: 'url(/TheFounderFormulaEntryPass.png)', // This will work if the image is in public/assets
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
@@ -33,7 +33,7 @@ export const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
           <div className="flex items-center justify-center gap-3 mb-4">
             <Brain className="w-12 h-12" style={{ color: '#052F3A' }} />
             <h1 className="text-4xl font-bold" style={{ color: '#052F3A' }}>
-              TECH-BINGOO
+              STARTUP BINGO
             </h1>
           </div>
         </div>

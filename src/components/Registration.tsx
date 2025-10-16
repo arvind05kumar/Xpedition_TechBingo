@@ -69,7 +69,7 @@ export const Registration: React.FC<RegistrationProps> = ({ onRegister }) => {
         <div className="text-center">
           <Trophy className="mx-auto h-12 w-12 text-indigo-600" />
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            TECH-BINGOO
+            STARTUP BINGO
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             {isLogin ? 'Sign in to play' : 'Create your account'}
