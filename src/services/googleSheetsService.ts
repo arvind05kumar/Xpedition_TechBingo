@@ -34,7 +34,7 @@ export class GoogleSheetsService {
     try {
       console.log('Sending game data to SheetDB endpoint:', CONFIG.SHEETDB_URL);
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500); // 3.5 sec timeout max
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 sec timeout
 
       const response = await fetch(CONFIG.SHEETDB_URL, {
         method: 'POST',
@@ -52,11 +52,11 @@ export class GoogleSheetsService {
         return true;
       } else {
         const errorText = await response.text();
-        console.warn('SheetDB error response:', response.status, errorText);
+        console.error('SheetDB error response (Status ' + response.status + '):', errorText);
         return false;
       }
     } catch (err: any) {
-      console.warn('SheetDB submission fast fallback triggered:', err.name || err);
+      console.error('SheetDB submission error:', err.name || err);
       return false;
     }
   }
