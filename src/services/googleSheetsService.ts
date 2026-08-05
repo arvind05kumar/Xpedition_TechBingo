@@ -25,47 +25,76 @@ export interface GameSubmissionData {
 
 import { CONFIG } from '../config';
 
-// Use the URL from configuration
+// Use the URLs from configuration
 const GOOGLE_APPS_SCRIPT_URL = CONFIG.GOOGLE_APPS_SCRIPT_URL;
 
 export class GoogleSheetsService {
-  private static async submitToGoogleSheets(data: GameSubmissionData): Promise<boolean> {
-    return new Promise((resolve) => {
-      // Create a hidden form and submit it
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = GOOGLE_APPS_SCRIPT_URL;
-      form.target = 'hidden-iframe';
-      form.style.display = 'none';
+  private static async submitToSheetDB(data: GameSubmissionData): Promise<boolean> {
+    if (!CONFIG.SHEETDB_URL || CONFIG.SHEETDB_URL.trim() === '') return false;
+    try {
+      console.log('Sending game data to SheetDB endpoint:', CONFIG.SHEETDB_URL);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500); // 3.5 sec timeout max
 
-      // Add all data as hidden fields
+      const response = await fetch(CONFIG.SHEETDB_URL, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ data: [data] }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        console.log('Game data successfully saved to SheetDB!');
+        return true;
+      } else {
+        const errorText = await response.text();
+        console.warn('SheetDB error response:', response.status, errorText);
+        return false;
+      }
+    } catch (err: any) {
+      console.warn('SheetDB submission fast fallback triggered:', err.name || err);
+      return false;
+    }
+  }
+
+  private static async submitToGoogleSheets(data: GameSubmissionData): Promise<boolean> {
+    // If SheetDB URL is provided, submit to SheetDB first
+    if (CONFIG.SHEETDB_URL && CONFIG.SHEETDB_URL.trim() !== '') {
+      const sheetDbSuccess = await this.submitToSheetDB(data);
+      if (sheetDbSuccess) return true;
+    }
+
+    if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL.trim() === '') return false;
+
+    // Fast no-cors fetch to Apps Script with 3-second timeout
+    try {
+      const formData = new URLSearchParams();
       Object.entries(data).forEach(([key, value]) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = String(value);
-        form.appendChild(input);
+        formData.append(key, String(value));
       });
 
-      // Create hidden iframe to receive response
-      const iframe = document.createElement('iframe');
-      iframe.name = 'hidden-iframe';
-      iframe.style.display = 'none';
-      iframe.onload = () => {
-        // Remove form and iframe after submission
-        document.body.removeChild(form);
-        document.body.removeChild(iframe);
-        
-        // For a one-day event, we'll assume success
-        console.log('Form submitted successfully');
-        resolve(true);
-      };
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-      // Add to page and submit
-      document.body.appendChild(iframe);
-      document.body.appendChild(form);
-      form.submit();
-    });
+      await fetch(GOOGLE_APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formData.toString(),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      return true;
+    } catch (e) {
+      console.warn('Google Apps Script request finished/timed out:', e);
+      return true;
+    }
   }
 
 

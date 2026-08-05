@@ -6,12 +6,12 @@ import { ProgressBar } from './components/ProgressBar';
 import { Welcome } from './components/Welcome';
 import { sampleQuestions } from './data/questions';
 import { GameState, Question, LeaderboardEntry } from './types';
-import { Brain } from 'lucide-react';
+import { Cloud } from 'lucide-react';
 import { GoogleSheetsService } from './services/googleSheetsService';
 import { isAnswerMatch } from './utils/answerMatch';
 
 const BOARD_SIZE = 5;
-const GAME_TIME = 900; // 15 minutes in seconds
+const GAME_TIME = 180; // 3 minutes in seconds
 // Reserved for future scoring extensions
 // const ROW_POINTS = 1;
 // const COLUMN_POINTS = 2;
@@ -233,25 +233,17 @@ function App() {
 
   if (gameState.gameOver) {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          backgroundImage: 'url(/background.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-        className="py-12"
-      >
-        <div className="max-w-4xl mx-auto">
+      <div className="aws-bg-gradient min-h-screen py-12 px-4 flex items-center justify-center">
+        <div className="max-w-4xl mx-auto w-full">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-4">
+            <h1 className="text-4xl font-extrabold bg-gradient-to-r from-purple-300 via-purple-100 to-white bg-clip-text text-transparent mb-3">
               {gameState.timeLeft <= 0 ? "Time's Up!!!" : "Game Finished!"}
             </h1>
-            <p className="text-xl text-white mb-4">Final Score: {gameState.score}</p>
+            <p className="text-2xl font-bold text-emerald-400 mb-4">Final Score: {gameState.score}</p>
             {isSubmittingToSheets && (
-              <div className="text-white mb-4">
+              <div className="text-purple-200 mb-4 flex items-center justify-center gap-3">
                 <p>Saving your results...</p>
-                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                <div className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-purple-400 border-t-transparent"></div>
               </div>
             )}
           </div>
@@ -268,32 +260,28 @@ function App() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundImage: 'url(/background.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-      className="py-6 px-3 sm:py-8 sm:px-4"
-    >
-      <div className="max-w-4xl w-full mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-6 md:p-8">
-        <div className="flex items-center justify-between mb-8">
+    <div className="aws-bg-gradient min-h-screen py-6 px-3 sm:py-8 sm:px-4 text-white">
+      <div className="max-w-4xl w-full mx-auto bg-[#0e0722]/90 backdrop-blur-xl border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-950/70 p-4 sm:p-6 md:p-8">
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-purple-900/40">
           <div className="flex items-center gap-3">
-            <Brain className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: '#052F3A' }} />
-            <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#052F3A' }}>
-              STARTUP BINGO
+            <div className="p-2 bg-purple-950/60 border border-purple-500/40 rounded-xl shadow-md">
+              <Cloud className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-purple-300 via-purple-100 to-white bg-clip-text text-transparent">
+              AWS BINGO
             </h1>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
-            <p className="text-base sm:text-lg font-medium text-gray-700">Player: {playerName}</p>
+            <p className="text-sm sm:text-base font-semibold text-purple-200 bg-purple-950/60 border border-purple-800/40 px-3 py-1.5 rounded-lg">
+              {playerName}
+            </p>
             <Timer
               timeLeft={gameState.timeLeft}
               setTimeLeft={(time) => setGameState(prev => ({ ...prev, timeLeft: time }))}
               onTimeUp={async () => {
                 setGameState(prev => ({ ...prev, gameOver: true }));
                 
-                // Submit to Google Sheets on timeout
+                // Submit to Google Sheets / SheetDB on timeout
                 setIsSubmittingToSheets(true);
                 try {
                   const success = await GoogleSheetsService.saveGameData(
@@ -304,12 +292,12 @@ function App() {
                   );
                   
                   if (success) {
-                    console.log('Game data saved to Google Sheets successfully!');
+                    console.log('Game data saved successfully!');
                   } else {
-                    console.error('Failed to save game data to Google Sheets');
+                    console.error('Failed to save game data');
                   }
                 } catch (error) {
-                  console.error('Error saving to Google Sheets:', error);
+                  console.error('Error saving game data:', error);
                 } finally {
                   setIsSubmittingToSheets(false);
                 }
@@ -342,16 +330,16 @@ function App() {
 
         <form onSubmit={handleAnswerSubmit} className="space-y-3 sm:space-y-4">
           <div>
-            <label htmlFor="answer" className="block text-sm font-medium text-gray-700">
-              Your Answer
+            <label htmlFor="answer" className="block text-sm font-semibold text-purple-200 mb-1.5">
+              Your Answer {selectedCell !== null && <span className="text-xs font-normal text-purple-400">(Selected Cell #{selectedCell + 1})</span>}
             </label>
             <input
               type="text"
               id="answer"
               value={currentAnswer}
               onChange={(e) => setCurrentAnswer(e.target.value)}
-              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base sm:text-lg py-3 sm:py-4 px-3 sm:px-4 h-12 sm:h-14 md:h-16"
-              placeholder="Type your answer here..."
+              className="mt-1 block w-full rounded-xl bg-[#160b33] border border-purple-500/40 text-white placeholder-purple-300/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400 text-base sm:text-lg py-3 sm:py-4 px-4 h-12 sm:h-14 md:h-16 transition-all"
+              placeholder={selectedCell !== null ? "Type your answer here..." : "Click any Bingo cell above to answer..."}
               disabled={selectedCell === null || gameState.gameOver || gameState.submitted}
             />
           </div>
@@ -359,9 +347,9 @@ function App() {
             <button
               type="submit"
               disabled={selectedCell === null || gameState.gameOver || gameState.submitted}
-              className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 sm:py-3 px-3 sm:px-4 rounded-lg 
-                hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 
-                disabled:cursor-not-allowed transition-all duration-200 font-medium text-sm sm:text-base"
+              className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 sm:py-3.5 px-3 sm:px-4 rounded-xl 
+                hover:from-purple-500 hover:to-indigo-500 disabled:from-purple-950/40 disabled:to-indigo-950/40 disabled:text-purple-400/40 disabled:border disabled:border-purple-900/30
+                disabled:cursor-not-allowed transition-all duration-200 font-bold text-sm sm:text-base shadow-lg shadow-purple-900/30"
             >
               Submit Answer
             </button>
@@ -369,9 +357,9 @@ function App() {
               type="button"
               onClick={handleGameSubmit}
               disabled={gameState.gameOver || gameState.submitted}
-              className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 sm:py-3 px-3 sm:px-4 rounded-lg 
-                hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-400 
-                disabled:cursor-not-allowed transition-all duration-200 font-medium text-sm sm:text-base"
+              className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 sm:py-3.5 px-3 sm:px-4 rounded-xl 
+                hover:from-emerald-500 hover:to-teal-500 disabled:from-gray-800 disabled:to-gray-900 disabled:text-gray-500
+                disabled:cursor-not-allowed transition-all duration-200 font-bold text-sm sm:text-base shadow-lg shadow-emerald-950/30"
             >
               Submit Game
             </button>

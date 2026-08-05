@@ -64,14 +64,14 @@ export const Registration: React.FC<RegistrationProps> = ({ onRegister }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-2xl">
+    <div className="aws-bg-gradient min-h-screen py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+      <div className="max-w-md w-full space-y-8 bg-[#0e0722]/90 backdrop-blur-xl border border-purple-500/30 p-8 rounded-2xl shadow-2xl shadow-purple-950/70 text-white">
         <div className="text-center">
-          <Trophy className="mx-auto h-12 w-12 text-indigo-600" />
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            STARTUP BINGO
+          <Trophy className="mx-auto h-12 w-12 text-purple-400" />
+          <h2 className="mt-6 text-3xl font-extrabold bg-gradient-to-r from-purple-300 via-purple-100 to-white bg-clip-text text-transparent">
+            AWS BINGO
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-purple-300/80">
             {isLogin ? 'Sign in to play' : 'Create your account'}
           </p>
         </div>

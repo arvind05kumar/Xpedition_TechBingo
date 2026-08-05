@@ -15,26 +15,25 @@ export const BingoCell: React.FC<BingoCellProps> = ({
   isSelected,
 }) => {
   const getBgColor = () => {
-    if (isCorrect === true) return 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200';
-    if (isCorrect === false) return 'bg-gradient-to-br from-red-50 to-rose-50 border-red-200';
-    if (isSelected) return 'bg-gradient-to-br from-indigo-600 to-purple-600 border-indigo-700 text-white shadow-lg';
-    return 'bg-white hover:bg-gradient-to-br hover:from-gray-50 hover:to-gray-100';
+    if (isCorrect === true) return 'bg-emerald-950/90 border-emerald-500/70 text-emerald-100 shadow-lg shadow-emerald-900/30';
+    if (isCorrect === false) return 'bg-rose-950/90 border-rose-500/70 text-rose-100 shadow-lg shadow-rose-900/30';
+    if (isSelected) return 'bg-gradient-to-br from-purple-600 to-indigo-600 border-2 border-purple-300 text-white shadow-xl shadow-purple-600/50 ring-2 ring-purple-400';
+    return 'bg-[#180e38]/80 hover:bg-[#261754] border border-purple-900/60 text-purple-100 hover:border-purple-400/50 hover:shadow-lg hover:shadow-purple-950/50';
   };
 
   return (
     <button
       onClick={onClick}
-      className={`${getBgColor()} p-3 sm:p-4 border rounded-lg shadow-sm 
-        hover:shadow-md transition-all duration-200 min-h-[90px] sm:min-h-[110px] md:min-h-[120px] text-xs sm:text-sm relative
-        transform hover:-translate-y-1 ${isSelected ? 'ring-4 ring-indigo-300 ring-opacity-50' : ''}`}
+      className={`${getBgColor()} p-3 sm:p-4 rounded-xl transition-all duration-200 min-h-[90px] sm:min-h-[110px] md:min-h-[120px] text-xs sm:text-sm relative flex flex-col justify-between items-center text-center
+        transform hover:-translate-y-1 ${isSelected ? 'scale-[1.02]' : ''}`}
     >
-      <p className={`${isSelected ? 'text-white' : 'text-gray-800'} leading-snug sm:leading-normal`}>{question}</p>
+      <p className="leading-snug font-medium my-auto">{question}</p>
       {isCorrect !== null && (
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 p-1 rounded-full bg-black/40 backdrop-blur-sm">
           {isCorrect ? (
-            <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+            <Check className="w-4 h-4 text-emerald-400" />
           ) : (
-            <X className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+            <X className="w-4 h-4 text-rose-400" />
           )}
         </div>
       )}
